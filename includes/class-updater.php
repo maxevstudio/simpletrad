@@ -43,7 +43,7 @@ class Updater {
 	 * @return string
 	 */
 	private function get_repo_slug() {
-		return apply_filters( 'simpletrad_github_repo', 'maxev/simpletrad' );
+		return apply_filters( 'simpletrad_github_repo', 'maxevstudio/simpletrad' );
 	}
 
 	/**

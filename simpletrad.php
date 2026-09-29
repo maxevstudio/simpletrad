@@ -1,13 +1,13 @@
 <?php
 /**
  * Plugin Name:       SimpleTrad
- * Plugin URI:         https://github.com/maxev/simpletrad
+ * Plugin URI:         https://github.com/maxevstudio/simpletrad
  * Description:        Traduit visuellement le front-end de votre site directement dans le navigateur du visiteur, sans dupliquer aucun contenu WordPress.
  * Version:            1.0.0
  * Requires at least:  6.4
  * Requires PHP:       7.4
  * Author:             Maxev
- * Author URI:         https://github.com/maxev
+ * Author URI:         https://github.com/maxevstudio
  * License:             GPL v2 or later
  * License URI:         https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:         simpletrad
