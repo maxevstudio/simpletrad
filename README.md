@@ -269,11 +269,26 @@ navigateur du visiteur.
 - Pas d'éditeur manuel de traductions, pas de traduction du back-office, pas
   de gestion par rôle : hors scope de la v1.
 
-## Mises à jour automatiques
+## Intégration continue et mises à jour automatiques
 
-SimpleTrad intègre un vérificateur de mises à jour basé sur les *releases*
-publiques GitHub (`includes/class-updater.php`), entièrement isolé du reste du
-plugin :
+SimpleTrad utilise **GitHub Actions** pour deux besoins bien séparés :
+
+- [`.github/workflows/ci.yml`](.github/workflows/ci.yml) — s'exécute à chaque
+  `push`/`pull request` sur `main` : lint PHP, lint JS/CSS, tests unitaires
+  Jest et build de production. Sert de garde-fou avant toute release.
+- [`.github/workflows/release.yml`](.github/workflows/release.yml) — s'exécute
+  uniquement quand un tag `vX.Y.Z` est poussé : rejoue les mêmes
+  vérifications puis génère le ZIP de production et l'attache automatiquement
+  à une Release GitHub.
+
+Ces workflows tournent sur l'infrastructure de GitHub et ne peuvent se
+déclencher qu'une fois le code déjà présent sur GitHub — ils ne remplacent
+donc pas le premier `git push` depuis votre machine, qui reste une étape
+manuelle unique (authentification oblige).
+
+Le plugin embarque en complément un vérificateur de mises à jour basé sur les
+*releases* publiques GitHub (`includes/class-updater.php`), entièrement isolé
+du reste du plugin :
 
 - aucune clé ni jeton personnel n'est embarqué dans le code ;
 - seule l'API publique `https://api.github.com/repos/<owner>/<repo>/releases/latest`
@@ -284,10 +299,12 @@ plugin :
 
 1. Mettre à jour `Version:` dans `simpletrad.php`, `SIMPLETRAD_VERSION`, et le
    [CHANGELOG.md](CHANGELOG.md).
-2. `npm run build`
-3. `npm run plugin-zip`
-4. Créer un tag Git `vX.Y.Z` et une release GitHub avec le ZIP en pièce jointe
-   (asset `.zip`) — c'est cet asset que l'updater détecte en priorité.
+2. Committer, pousser sur `main` (la CI se déclenche et doit passer au vert).
+3. Créer et pousser un tag `vX.Y.Z` :
+   `git tag vX.Y.Z && git push origin vX.Y.Z`
+4. Le workflow `release.yml` construit le ZIP et publie automatiquement la
+   Release GitHub correspondante — c'est cet asset que l'updater détecte en
+   priorité. Aucune étape manuelle de build/zip n'est nécessaire.
 
 ## Licence
 
