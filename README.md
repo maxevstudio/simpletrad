@@ -57,7 +57,10 @@ Traduction visuelle dans le DOM du visiteur
   de nombre de langues.
 - **Switcher** : détection automatique de la langue du navigateur, affichage
   (nom / code / drapeau) et orientation (horizontal / vertical).
+- **CSS personnalisé** : éditeur CSS avec aperçu en direct (voir plus bas).
 - **Exclusions** : sélecteurs CSS additionnels à ne jamais traduire.
+- **Termes protégés** : marques, noms propres ou expressions jamais
+  traduits (voir plus bas).
 
 Tout est stocké dans une unique option WordPress structurée
 (`simpletrad_settings`). **Aucune traduction n'est jamais stockée** — voir
@@ -105,6 +108,80 @@ Exemple minimal :
 
 Cette référence, avec un bouton « Copier », est aussi disponible directement
 dans l'écran de réglages de SimpleTrad.
+
+## CSS personnalisé du switcher
+
+En plus de la référence de classes ci-dessus, l'administration propose un
+véritable éditeur CSS (« CSS personnalisé du switcher ») : ce que vous y
+écrivez est appliqué **immédiatement** à l'aperçu du switcher affiché juste
+au-dessus, sans avoir besoin d'enregistrer — l'aperçu réutilise exactement
+les mêmes classes HTML que le switcher réellement affiché sur le site, il
+n'existe aucun second système de style dédié à la prévisualisation.
+
+```css
+.simpletrad-switcher {
+	background: #111;
+	padding: 5px;
+	border-radius: 30px;
+}
+
+.simpletrad-language {
+	color: #fff;
+}
+
+.simpletrad-language.is-active {
+	background: #fff;
+	color: #111;
+}
+```
+
+Une fois enregistré, ce CSS est chargé sur le front via
+`wp_add_inline_style()` — uniquement sur les pages où `[simpletrad]` est
+réellement affiché, jamais globalement. Un bouton « Réinitialiser le CSS »
+(avec confirmation) permet de vider uniquement ce champ, sans toucher aux
+autres réglages.
+
+## Termes protégés
+
+Certains mots ne doivent jamais être traduits : noms de marque, noms
+propres, enseignes… La section « Termes protégés » de l'administration
+permet d'en déclarer une liste (`FormTokenField`, sans limite) :
+
+```
+Maxev, SimpleTrad, Hôtel Martinez, Jean Dupont, Côte d'Azur
+```
+
+Contrairement aux exclusions CSS (qui ignorent un élément HTML entier), un
+terme protégé ne shunte qu'une portion précise de texte : dans « Bienvenue
+chez Maxev à Cannes », le reste de la phrase continue d'être traduit
+normalement, seul « Maxev » ressort inchangé.
+
+Techniquement, chaque terme est remplacé par un placeholder unique avant
+l'envoi au moteur de traduction, puis restauré après coup — en utilisant
+la **casse exacte réellement présente dans le DOM** à cet endroit (pas
+forcément celle saisie dans les réglages), afin que le rendu final reste
+cohérent avec le reste de la phrase.
+
+## Conservation de la casse (majuscules)
+
+Les moteurs de traduction normalisent parfois la casse (« Découvrir nos
+chambres » traduit en « discover our rooms » au lieu de « Discover our
+rooms »). SimpleTrad corrige ce point après traduction, à partir d'un motif
+détecté sur le texte source :
+
+| Texte source | Motif détecté | Effet sur la traduction |
+| --- | --- | --- |
+| `Bonjour` | première lettre majuscule | force la première lettre de la traduction en majuscule |
+| `BIENVENUE` / `RÉSERVER MAINTENANT` | tout en majuscules | force toute la traduction en majuscules |
+| `contact` | tout en minuscules | aucune majuscule n'est ajoutée artificiellement |
+| `iPhone`, `eCommerce` | casse mixte (mot-marque) | traduction laissée telle quelle, jamais forcée |
+
+Volontairement, SimpleTrad ne reproduit **jamais** la casse mot par mot
+(« Découvrez Notre Hôtel » ne force pas une majuscule sur chaque mot
+traduit) : cela casserait des mots à casse intentionnelle comme `iPhone` ou
+`eCommerce`. Cette correction s'applique après restauration des termes
+protégés, au-dessus de l'abstraction `TranslationEngine` — elle fonctionne
+donc de la même façon quel que soit le moteur réellement utilisé.
 
 ## Exclure du contenu de la traduction
 
@@ -220,12 +297,15 @@ npm run lint:css    # Stylelint (config @wordpress/stylelint-config)
 npm run test:unit   # Jest (jsdom) sur les modules de traduction front-end
 ```
 
-Les 25 tests unitaires couvrent notamment : normalisation des locales,
+Les 55 tests unitaires couvrent notamment : normalisation des locales,
 détection de la langue navigateur, éligibilité des liens pour `?lang=`,
 préservation des autres paramètres de requête, collecte des nœuds texte via
 `TreeWalker`, exclusions (`.simpletrad-no-translate`, `translate="no"`,
-sélecteurs admin), et non-chaînage des traductions (toujours
-langue source → langue cible, jamais FR → EN → ES).
+sélecteurs admin), non-chaînage des traductions (toujours langue source →
+langue cible, jamais FR → EN → ES), protection des termes (placeholders,
+occurrences multiples, imbrication, casse restaurée depuis le DOM) et
+conservation de la casse (majuscules, première lettre, mots à casse mixte
+comme `iPhone`/`eCommerce` jamais forcés).
 
 ### Structure du projet
 
@@ -258,7 +338,7 @@ supportées par tous ces navigateurs. Seule la traduction elle-même dépend de
 la disponibilité de la Translator API (ou d'un fallback auto-hébergé) dans le
 navigateur du visiteur.
 
-## Limitations connues (v1.0.0)
+## Limitations connues
 
 - La traduction réelle du contenu dépend du navigateur du visiteur : sans
   Chrome/Chromium ≥ 138 (ou un fallback auto-hébergé configuré), le switcher

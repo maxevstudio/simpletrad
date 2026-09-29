@@ -3,7 +3,7 @@
  * Plugin Name:       SimpleTrad
  * Plugin URI:         https://github.com/maxevstudio/simpletrad
  * Description:        Traduit visuellement le front-end de votre site directement dans le navigateur du visiteur, sans dupliquer aucun contenu WordPress.
- * Version:            1.0.0
+ * Version:            1.0.1
  * Requires at least:  6.4
  * Requires PHP:       7.4
  * Author:             Maxev
@@ -22,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Do not access this file directly.
 }
 
-define( 'SIMPLETRAD_VERSION', '1.0.0' );
+define( 'SIMPLETRAD_VERSION', '1.0.1' );
 define( 'SIMPLETRAD_FILE', __FILE__ );
 define( 'SIMPLETRAD_PATH', plugin_dir_path( __FILE__ ) );
 define( 'SIMPLETRAD_URL', plugin_dir_url( __FILE__ ) );

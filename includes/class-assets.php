@@ -64,6 +64,7 @@ class Assets {
 				'switcherLayout'    => $settings['switcher_layout'],
 				'excludedSelectors' => $settings['excluded_selectors'],
 				'fallbackModelsUrl' => $settings['fallback_models_url'],
+				'protectedTerms'    => $settings['protected_terms'],
 				'queryParam'        => 'lang',
 				'noTranslateClass'  => 'simpletrad-no-translate',
 				'i18n'              => array(
@@ -96,6 +97,12 @@ class Assets {
 	public function enqueue_frontend() {
 		wp_enqueue_script( self::FRONTEND_HANDLE );
 		wp_enqueue_style( self::FRONTEND_HANDLE );
+
+		$custom_css = Settings::get_all()['custom_css'];
+
+		if ( '' !== trim( (string) $custom_css ) ) {
+			wp_add_inline_style( self::FRONTEND_HANDLE, $custom_css );
+		}
 	}
 
 	/**

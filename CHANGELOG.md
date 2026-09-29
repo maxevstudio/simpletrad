@@ -4,6 +4,48 @@ Toutes les modifications notables de SimpleTrad sont documentées dans ce
 fichier. Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 et le projet respecte le [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.0.1] — Mise à jour corrective et fonctionnelle
+
+### Ajouté
+
+- Éditeur CSS personnalisé du switcher directement dans l'administration
+  (`CustomCssEditor`, textarea monospace natif), avec aperçu en direct dans
+  le même composant `SwitcherPreview` que le front-end (aucun second
+  système de style dédié à la prévisualisation). Bouton « Réinitialiser le
+  CSS » avec confirmation, sans jamais toucher aux autres réglages.
+- Termes protégés (`ProtectedTermsField`, `FormTokenField`, sans limite)
+  pour empêcher la traduction de marques, noms propres ou expressions
+  (ex. `Maxev`, `SimpleTrad`, `Hôtel Martinez`). Implémentés via des
+  placeholders uniques substitués avant traduction et restaurés après,
+  en conservant la casse exacte trouvée dans le DOM à cet endroit précis.
+- Conservation de la casse après traduction (`case-utils.js`) : première
+  lettre majuscule préservée, texte tout en majuscules restitué en
+  majuscules, aucune capitalisation artificielle sur du texte en
+  minuscules, et surtout aucune capitalisation mot-par-mot — les mots à
+  casse mixte comme `iPhone` ou `eCommerce` ne sont jamais altérés.
+- Nouveau réglage `custom_css`, chargé sur le front via
+  `wp_add_inline_style()` uniquement sur les pages où `[simpletrad]` est
+  réellement affiché.
+
+### Modifié
+
+- Le pipeline de traduction (`TranslationController`) applique désormais :
+  protection des termes → traduction → restauration des termes → correction
+  de casse → affichage, en restant entièrement au-dessus de l'abstraction
+  `TranslationEngine` (fonctionne identiquement avec le moteur natif ou le
+  fallback WASM auto-hébergé).
+- 30 nouveaux tests unitaires et d'intégration (55 au total) couvrant les
+  cas de casse et de termes protégés spécifiés, y compris leur combinaison
+  dans une même phrase.
+
+### Compatibilité
+
+- Migration transparente depuis 1.0.0 : les réglages existants (langue
+  source, langues proposées, exclusions, etc.) sont entièrement préservés ;
+  les nouvelles clés (`custom_css`, `protected_terms`) reçoivent simplement
+  leurs valeurs par défaut via la fusion `wp_parse_args()` déjà en place.
+  Aucune réinstallation nécessaire.
+
 ## [1.0.0] — Première version
 
 ### Ajouté
@@ -34,3 +76,4 @@ et le projet respecte le [Semantic Versioning](https://semver.org/lang/fr/).
   `simpletrad_settings` (aucune traduction n'étant jamais stockée).
 - Audit technique documenté (`AUDIT.md`) des moteurs de traduction
   disponibles (Translator API, Bergamot/Mozilla Translations).
+

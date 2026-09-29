@@ -4,6 +4,8 @@ import {
 	applyTranslation,
 	restoreOriginals,
 } from './dom-walker';
+import { protectTerms, restoreTerms } from './protect-terms';
+import { applyCasePattern } from './case-utils';
 
 const MUTATION_DEBOUNCE_MS = 200;
 
@@ -15,6 +17,9 @@ const MUTATION_DEBOUNCE_MS = 200;
  * Always translates from the original source text (never chains
  * FR → EN → ES) since `registry.originals` keeps the pristine values for
  * the whole lifetime of the page.
+ *
+ * Translation pipeline for each collected string:
+ * original text → protect terms → translate → restore terms → fix case → DOM.
  */
 export class TranslationController {
 	/**
@@ -140,11 +145,24 @@ export class TranslationController {
 
 		const texts = Array.from( groups.keys() );
 
+		// Protected terms and case correction sit *above* the
+		// TranslationEngine abstraction: engines only ever see placeholder
+		// text and never know about brands/casing at all. Always translate
+		// from the pristine source text (never the previously translated
+		// result), matching the rest of the plugin's FR → EN / FR → ES
+		// (never FR → EN → ES) guarantee.
+		const protectedEntries = texts.map( ( text ) =>
+			protectTerms( text, this.config.protectedTerms || [] )
+		);
+		const textsToTranslate = protectedEntries.map(
+			( entry ) => entry.text
+		);
+
 		let translated;
 
 		try {
 			translated = await resolved.engine.translateBatch(
-				texts,
+				textsToTranslate,
 				this.config.sourceLanguage,
 				targetLanguage,
 				( ratio ) =>
@@ -168,7 +186,13 @@ export class TranslationController {
 		}
 
 		texts.forEach( ( text, index ) => {
-			applyTranslation( groups.get( text ), translated[ index ] );
+			const restored = restoreTerms(
+				translated[ index ],
+				protectedEntries[ index ].restoreMap
+			);
+			const finalText = applyCasePattern( text, restored );
+
+			applyTranslation( groups.get( text ), finalText );
 		} );
 
 		return true;

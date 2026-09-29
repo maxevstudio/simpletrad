@@ -36,6 +36,8 @@ class Settings {
 			'switcher_layout'   => 'horizontal', // horizontal | dropdown.
 			'excluded_selectors' => array(),
 			'fallback_models_url' => '',
+			'custom_css'        => '',
+			'protected_terms'   => array(),
 		);
 	}
 
@@ -129,6 +131,20 @@ class Settings {
 			$sanitized['fallback_models_url'] = esc_url_raw( trim( (string) $input['fallback_models_url'] ) );
 		}
 
+		if ( isset( $input['custom_css'] ) ) {
+			$sanitized['custom_css'] = self::sanitize_custom_css( $input['custom_css'] );
+		}
+
+		if ( isset( $input['protected_terms'] ) && is_array( $input['protected_terms'] ) ) {
+			$sanitized['protected_terms'] = array_values(
+				array_unique(
+					array_filter(
+						array_map( 'sanitize_text_field', $input['protected_terms'] )
+					)
+				)
+			);
+		}
+
 		// A language can never be both the source and a target at once.
 		$sanitized['target_languages'] = array_values(
 			array_diff( $sanitized['target_languages'], array( $sanitized['source_language'] ) )
@@ -150,5 +166,22 @@ class Settings {
 		$code = trim( (string) $code );
 
 		return preg_replace( '/[^A-Za-z0-9\-]/', '', $code );
+	}
+
+	/**
+	 * Sanitizes the admin-provided custom CSS for the switcher.
+	 *
+	 * Only `manage_options` users can reach this (see Rest_Controller), so
+	 * this is defense-in-depth rather than a strict CSS parser: it strips
+	 * any HTML tags and any attempt to break out of the `<style>` element
+	 * the CSS is later output in via `wp_add_inline_style()`.
+	 *
+	 * @param string $css Raw CSS from the settings screen.
+	 * @return string
+	 */
+	public static function sanitize_custom_css( $css ) {
+		$css = wp_strip_all_tags( (string) $css );
+
+		return str_ireplace( '</style', '', $css );
 	}
 }

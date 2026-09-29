@@ -2,7 +2,7 @@
 # This file is distributed under the same license as the SimpleTrad plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: SimpleTrad 1.0.0\n"
+"Project-Id-Version: SimpleTrad 1.0.1\n"
 "Report-Msgid-Bugs-To: https://github.com/maxevstudio/simpletrad/issues\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -13,11 +13,11 @@ msgstr ""
 "Language: \n"
 
 #: includes/class-admin-page.php:25 includes/class-admin-page.php:26
-#: src/admin/App.js:97
+#: src/admin/App.js:99
 msgid "SimpleTrad"
 msgstr ""
 
-#: includes/class-assets.php:71
+#: includes/class-assets.php:72
 msgid "Traduction…"
 msgstr ""
 
@@ -99,12 +99,34 @@ msgstr ""
 msgid "La langue dans laquelle votre contenu WordPress est réellement rédigé."
 msgstr ""
 
+#: src/admin/components/CustomCssEditor.js:23
+msgid "Réinitialiser le CSS personnalisé du switcher ?"
+msgstr ""
+
+#: src/admin/components/CustomCssEditor.js:36
+msgid "CSS personnalisé du switcher"
+msgstr ""
+
+#: src/admin/components/CustomCssEditor.js:38
+msgid ""
+"Ce CSS est appliqué immédiatement à l’aperçu ci-dessous et chargé sur le "
+"front, uniquement sur les pages où le switcher est affiché."
+msgstr ""
+
+#: src/admin/components/CustomCssEditor.js:54
+msgid "Réinitialiser le CSS"
+msgstr ""
+
 #: src/admin/components/ExclusionsField.js:15
 msgid "Sélecteurs CSS à ne jamais traduire"
 msgstr ""
 
-#: src/admin/components/SwitcherPreview.js:52
+#: src/admin/components/SwitcherPreview.js:59
 msgid "Aperçu"
+msgstr ""
+
+#: src/admin/components/ProtectedTermsField.js:17 src/admin/App.js:207
+msgid "Termes protégés"
 msgstr ""
 
 #: src/admin/components/TargetLanguagesField.js:43
@@ -115,55 +137,61 @@ msgstr ""
 msgid "Rechercher : anglais, english, en…"
 msgstr ""
 
-#: src/admin/App.js:62
+#: src/admin/App.js:64
 msgid "Réglages enregistrés."
 msgstr ""
 
-#: src/admin/App.js:71
+#: src/admin/App.js:73
 msgid "Une erreur est survenue lors de l’enregistrement."
 msgstr ""
 
-#: src/admin/App.js:100
+#: src/admin/App.js:102
 msgid ""
 "Traduisez visuellement votre site pour vos visiteurs, sans jamais dupliquer "
 "une seule page."
 msgstr ""
 
-#: src/admin/App.js:116
+#: src/admin/App.js:118
 msgid "Langues"
 msgstr ""
 
-#: src/admin/App.js:136
+#: src/admin/App.js:138
 msgid ""
 "Le moteur de traduction réellement utilisé dépend du navigateur de chaque "
 "visiteur : SimpleTrad ne promet jamais une traduction qu’il ne peut pas "
 "fournir (voir AUDIT.md)."
 msgstr ""
 
-#: src/admin/App.js:145
+#: src/admin/App.js:147
 msgid "Switcher"
 msgstr ""
 
-#: src/admin/App.js:177
+#: src/admin/App.js:187
 msgid "Exclusions"
 msgstr ""
 
-#: src/admin/App.js:188
+#: src/admin/App.js:198
 msgid ""
 "La classe .simpletrad-no-translate et l’attribut translate=\"no\" sont "
 "toujours respectés, même sans réglage."
 msgstr ""
 
-#: src/admin/App.js:197
+#: src/admin/App.js:218
+msgid ""
+"Ajoutez ici les noms, marques ou expressions qui ne doivent jamais être "
+"traduits (ex. : Maxev, SimpleTrad, Hôtel Martinez, Jean Dupont, Côte d’Azur)."
+msgstr ""
+
+#: src/admin/App.js:227
 msgid "Shortcode"
 msgstr ""
 
-#: src/admin/App.js:202
+#: src/admin/App.js:232
 msgid ""
 "Ajoutez ce shortcode où vous voulez afficher le switcher (Elementor, éditeur "
 "de blocs…) :"
 msgstr ""
 
-#: src/admin/App.js:219
+#: src/admin/App.js:249
 msgid "Enregistrer"
 msgstr ""

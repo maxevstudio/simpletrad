@@ -14,7 +14,9 @@ import SourceLanguageSelect from './components/SourceLanguageSelect';
 import TargetLanguagesField from './components/TargetLanguagesField';
 import SwitcherSettings from './components/SwitcherSettings';
 import SwitcherPreview from './components/SwitcherPreview';
+import CustomCssEditor from './components/CustomCssEditor';
 import ExclusionsField from './components/ExclusionsField';
+import ProtectedTermsField from './components/ProtectedTermsField';
 import CssClassesReference from './components/CssClassesReference';
 
 /**
@@ -166,6 +168,14 @@ export default function App() {
 						targetLanguages={ settings.target_languages }
 						display={ settings.switcher_display }
 						layout={ settings.switcher_layout }
+						customCss={ settings.custom_css }
+					/>
+
+					<CustomCssEditor
+						value={ settings.custom_css }
+						onChange={ ( value ) =>
+							updateSetting( 'custom_css', value )
+						}
 					/>
 
 					<CssClassesReference />
@@ -186,6 +196,26 @@ export default function App() {
 					<p className="simpletrad-admin__hint">
 						{ __(
 							'La classe .simpletrad-no-translate et l’attribut translate="no" sont toujours respectés, même sans réglage.',
+							'simpletrad'
+						) }
+					</p>
+				</CardBody>
+			</Card>
+
+			<Card>
+				<CardHeader>
+					<h2>{ __( 'Termes protégés', 'simpletrad' ) }</h2>
+				</CardHeader>
+				<CardBody>
+					<ProtectedTermsField
+						value={ settings.protected_terms }
+						onChange={ ( value ) =>
+							updateSetting( 'protected_terms', value )
+						}
+					/>
+					<p className="simpletrad-admin__hint">
+						{ __(
+							'Ajoutez ici les noms, marques ou expressions qui ne doivent jamais être traduits (ex. : Maxev, SimpleTrad, Hôtel Martinez, Jean Dupont, Côte d’Azur).',
 							'simpletrad'
 						) }
 					</p>

@@ -136,6 +136,13 @@ class Rest_Controller {
 				'type'              => 'string',
 				'sanitize_callback' => 'esc_url_raw',
 			),
+			'custom_css'          => array(
+				'type'              => 'string',
+				'sanitize_callback' => array( 'SimpleTrad\\Settings', 'sanitize_custom_css' ),
+			),
+			'protected_terms'     => array(
+				'type' => 'array',
+			),
 		);
 	}
 }
