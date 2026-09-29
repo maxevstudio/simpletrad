@@ -1,0 +1,80 @@
+/**
+ * SimpleTrad admin screen — minimal layout glue only. All actual controls
+ * come from `@wordpress/components`; this file never re-implements them.
+ */
+
+.simpletrad-admin {
+	max-width: 720px;
+	margin: 24px 20px 0 2px;
+}
+
+.simpletrad-admin__loading {
+	display: flex;
+	justify-content: center;
+	padding: 60px 0;
+}
+
+.simpletrad-admin__intro {
+	margin-bottom: 24px;
+}
+
+.simpletrad-admin > .components-card {
+	margin-bottom: 24px;
+}
+
+.simpletrad-admin__hint {
+	color: #757575;
+	margin-top: 12px;
+}
+
+.simpletrad-admin__actions {
+	margin: 24px 0 48px;
+}
+
+.simpletrad-field-group {
+	margin-top: 20px;
+}
+
+.simpletrad-field-group__label {
+	font-weight: 500;
+	margin-bottom: 6px;
+}
+
+.simpletrad-field-group__hint {
+	color: #757575;
+	font-size: 12px;
+	margin-top: 6px;
+}
+
+.simpletrad-preview {
+	margin-top: 24px;
+	padding: 16px;
+	border: 1px dashed #ccc;
+	border-radius: 4px;
+}
+
+.simpletrad-preview__title {
+	font-weight: 500;
+	margin: 0 0 12px;
+}
+
+.simpletrad-css-reference {
+	margin-top: 24px;
+}
+
+.simpletrad-css-reference__title {
+	font-weight: 500;
+}
+
+.simpletrad-css-reference__list {
+	columns: 2;
+	margin: 8px 0 16px;
+}
+
+.simpletrad-css-reference__example {
+	background: #f0f0f1;
+	padding: 12px;
+	border-radius: 4px;
+	overflow-x: auto;
+	margin-bottom: 12px;
+}

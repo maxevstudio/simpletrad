@@ -1,0 +1,82 @@
+/**
+ * SimpleTrad switcher — base styles.
+ *
+ * Stable class names (documented in the admin screen and in README.md), free
+ * to override from a child theme, Elementor's custom CSS, or the WordPress
+ * Customizer:
+ *
+ *   .simpletrad-switcher
+ *   .simpletrad-language
+ *   .simpletrad-language-label
+ *   .simpletrad-language-code
+ *   .simpletrad-language-flag
+ *   .simpletrad-language.is-active
+ *   .simpletrad-language.is-loading
+ */
+
+.simpletrad-switcher {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.5em;
+}
+
+.simpletrad-switcher.is-layout-dropdown {
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 0.25em;
+}
+
+.simpletrad-language {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4em;
+	background: transparent;
+	border: 1px solid rgba(0, 0, 0, 0.15);
+	border-radius: 4px;
+	padding: 0.35em 0.75em;
+	font: inherit;
+	cursor: pointer;
+	color: inherit;
+	transition: opacity 0.15s ease;
+}
+
+.simpletrad-language:focus-visible {
+	outline: 2px solid currentcolor;
+	outline-offset: 2px;
+}
+
+.simpletrad-language.is-active {
+	font-weight: 600;
+	border-color: currentcolor;
+}
+
+.simpletrad-language.is-loading {
+	opacity: 0.6;
+	cursor: progress;
+}
+
+.simpletrad-language.is-loading::after {
+	content: "";
+	width: 0.8em;
+	height: 0.8em;
+	margin-left: 0.2em;
+	border: 2px solid currentcolor;
+	border-right-color: transparent;
+	border-radius: 50%;
+	display: inline-block;
+	animation: simpletrad-spin 0.6s linear infinite;
+}
+
+.simpletrad-language-flag {
+	width: 1.2em;
+	height: 1.2em;
+	display: inline-block;
+}
+
+@keyframes simpletrad-spin {
+
+	to {
+		transform: rotate(360deg);
+	}
+}

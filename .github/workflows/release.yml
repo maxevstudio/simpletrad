@@ -1,0 +1,42 @@
+name: Release
+
+# Builds a production-ready ZIP and attaches it to the GitHub Release whenever
+# a version tag (e.g. v1.0.0) is pushed. The auto-update checker
+# (includes/class-updater.php) reads this ZIP asset from the Release.
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: |
+          npm run lint:js
+          npm run lint:css
+
+      - name: Unit tests
+        run: npm run test:unit
+
+      - name: Build production assets
+        run: npm run build
+
+      - name: Create plugin ZIP
+        run: npm run plugin-zip
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: simpletrad.zip
+          generate_release_notes: true
