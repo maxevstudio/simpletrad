@@ -1,5 +1,9 @@
 import { TranslationController } from './translation/controller';
-import { detectPreferredLanguage } from './locale-detect';
+import {
+	detectPreferredLanguage,
+	getRememberedLanguage,
+	rememberLanguage,
+} from './locale-detect';
 import { getLangFromUrl, setLangInUrl, propagateLangToLinks } from './url-lang';
 
 /**
@@ -22,6 +26,8 @@ function bootSwitcher() {
 	}
 
 	const availableCodes = config.targetLanguages.map( ( lang ) => lang.code );
+	const isOffered = ( code ) =>
+		code === config.sourceLanguage || availableCodes.includes( code );
 	const controller = new TranslationController( config );
 
 	const setButtonsState = ( { language, status } ) => {
@@ -64,26 +70,32 @@ function bootSwitcher() {
 				button.addEventListener( 'click', () => {
 					const code = button.getAttribute( 'data-simpletrad-lang' );
 
-					if ( code !== controller.currentLanguage ) {
+					// Compared with the *requested* language so the visitor
+					// can change their mind while a translation is loading.
+					if ( code !== controller.requestedLanguage ) {
+						rememberLanguage( code );
 						activateLanguage( code );
 					}
 				} );
 			} );
 	} );
 
-	// 1) explicit ?lang=xx always wins; 2) browser preference if enabled;
-	// 3) otherwise the original source language stays untouched.
+	// 1) explicit ?lang=xx always wins; 2) then the language the visitor
+	// last picked in the switcher; 3) then the browser preference if
+	// enabled; 4) otherwise the original source language stays untouched.
 	const urlLang = getLangFromUrl( config.queryParam );
+	const rememberedLang = getRememberedLanguage();
 	let initialLanguage = null;
 
-	if (
-		urlLang &&
-		( urlLang === config.sourceLanguage ||
-			availableCodes.includes( urlLang ) )
-	) {
+	if ( urlLang && isOffered( urlLang ) ) {
 		initialLanguage = urlLang;
+	} else if ( rememberedLang && isOffered( rememberedLang ) ) {
+		initialLanguage = rememberedLang;
 	} else if ( config.autoDetect ) {
-		initialLanguage = detectPreferredLanguage( availableCodes );
+		initialLanguage = detectPreferredLanguage( [
+			config.sourceLanguage,
+			...availableCodes,
+		] );
 	}
 
 	setButtonsState( {

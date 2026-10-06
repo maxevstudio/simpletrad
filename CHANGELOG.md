@@ -4,6 +4,26 @@ Toutes les modifications notables de SimpleTrad sont documentées dans ce
 fichier. Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 et le projet respecte le [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.0.3] — Changement de langue fiable et mises à jour automatiques
+
+### Corrigé
+
+- Le retour à la langue source n'est plus annulé par la détection
+  automatique : le dernier choix du visiteur est mémorisé (localStorage) et
+  prime sur la langue du navigateur. Ordre : `?lang=` → dernier choix →
+  navigateur → langue source.
+- La détection automatique tient compte de la langue source : un navigateur
+  « français, puis anglais » reste en français au lieu de basculer en anglais.
+- Changer de langue pendant qu'une traduction charge : la traduction dépassée
+  est abandonnée au lieu d'écraser le dernier choix, et le clic sur la langue
+  source n'est plus ignoré pendant le chargement.
+- Mises à jour : « Vérifier à nouveau » vide le cache de l'updater, un échec
+  de vérification n'est mis en cache que 15 minutes (au lieu de 6 h), et
+  l'updater est chargé pendant WP-Cron/WP-CLI pour que les mises à jour
+  automatiques en arrière-plan fonctionnent. SimpleTrad est aussi déclaré
+  « à jour » à WordPress, ce qui affiche le lien « Activer les mises à jour
+  auto ».
+
 ## [1.0.2] — Pastille flottante et fidélité de mise en page
 
 ### Ajouté

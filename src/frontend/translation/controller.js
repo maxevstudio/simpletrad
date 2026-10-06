@@ -33,6 +33,11 @@ export class TranslationController {
 		);
 		this.registry = new Map(); // node → Map(kind → { original, applied })
 		this.currentLanguage = config.sourceLanguage;
+		// Language of the latest switch request, possibly still loading.
+		this.requestedLanguage = config.sourceLanguage;
+		// Bumped on every switch: any translation started for an older
+		// request is dropped instead of overwriting the newer language.
+		this.requestId = 0;
 		this.listeners = new Set();
 		this.observer = null;
 		this.mutationQueue = [];
@@ -121,9 +126,10 @@ export class TranslationController {
 	 *
 	 * @param {Node}   root           Root node to scan and translate.
 	 * @param {string} targetLanguage Target BCP 47 code.
+	 * @param {number} [requestId]    Switch request this pass belongs to.
 	 * @return {Promise<boolean>} Whether translation actually happened.
 	 */
-	async translateRoot( root, targetLanguage ) {
+	async translateRoot( root, targetLanguage, requestId = this.requestId ) {
 		const groups = collectTranslatables(
 			root,
 			this.config.noTranslateClass,
@@ -140,7 +146,7 @@ export class TranslationController {
 			targetLanguage
 		);
 
-		if ( ! resolved ) {
+		if ( ! resolved || requestId !== this.requestId ) {
 			return false;
 		}
 
@@ -186,6 +192,12 @@ export class TranslationController {
 			return false;
 		}
 
+		// The visitor picked another language meanwhile: applying this
+		// (now stale) result would override the newer choice.
+		if ( requestId !== this.requestId ) {
+			return false;
+		}
+
 		texts.forEach( ( text, index ) => {
 			const restored = restoreTerms(
 				translated[ index ],
@@ -210,6 +222,10 @@ export class TranslationController {
 	 * @return {Promise<boolean>} Whether the switch succeeded.
 	 */
 	async setLanguage( targetLanguage ) {
+		const requestId = ++this.requestId;
+
+		this.requestedLanguage = targetLanguage;
+
 		if ( targetLanguage === this.config.sourceLanguage ) {
 			restoreOriginals( this.registry );
 			this.currentLanguage = this.config.sourceLanguage;
@@ -221,14 +237,21 @@ export class TranslationController {
 
 		const success = await this.translateRoot(
 			document.body,
-			targetLanguage
+			targetLanguage,
+			requestId
 		);
+
+		if ( requestId !== this.requestId ) {
+			// Superseded by a newer switch, which owns the state now.
+			return false;
+		}
 
 		if ( success ) {
 			this.currentLanguage = targetLanguage;
 			this.startObserving();
 			this.emit( { language: targetLanguage, status: 'idle' } );
 		} else {
+			this.requestedLanguage = this.currentLanguage;
 			this.emit( {
 				language: this.currentLanguage,
 				status: 'unavailable',

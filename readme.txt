@@ -4,7 +4,7 @@ Tags: translation, multilingual, language switcher, front-end translation
 Requires at least: 6.4
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.0.2
+Stable tag: 1.0.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -67,6 +67,12 @@ Non. La v1.0.0 ne nécessite aucune clé Google Cloud, DeepL, Microsoft
 Translator ni aucun abonnement.
 
 == Changelog ==
+
+= 1.0.3 =
+* Retour à la langue source mémorisé : la détection automatique ne rebascule plus en anglais à la page suivante.
+* La langue source est prise en compte par la détection automatique du navigateur.
+* Changer de langue pendant un chargement fonctionne : une traduction dépassée n'écrase plus le dernier choix.
+* Mises à jour : « Vérifier à nouveau » interroge vraiment GitHub, un échec n'est plus mis en cache 6 h, et les mises à jour automatiques en arrière-plan fonctionnent.
 
 = 1.0.2 =
 * Pastille flottante optionnelle (sélecteur de langue + bouton « Retour en haut »).

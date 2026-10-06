@@ -118,4 +118,53 @@ describe( 'TranslationController translation pipeline', () => {
 		const [ sentTexts ] = fakeTranslateBatch.mock.calls[ 0 ];
 		expect( sentTexts ).toContain( 'Bonjour' );
 	} );
+
+	it( 'switches between two target languages from the original text', async () => {
+		document.body.innerHTML = '<p>Bonjour</p>';
+		fakeTranslateBatch.mockImplementation( ( texts, from, to ) =>
+			Promise.resolve(
+				texts.map( () => ( to === 'it' ? 'Ciao' : 'Hello' ) )
+			)
+		);
+
+		const controller = makeController();
+		await controller.setLanguage( 'en' );
+		await controller.setLanguage( 'it' );
+
+		expect( document.body.textContent ).toBe( 'Ciao' );
+		expect( fakeTranslateBatch.mock.calls[ 1 ][ 0 ] ).toEqual( [
+			'Bonjour',
+		] );
+
+		await controller.setLanguage( 'fr' );
+		expect( document.body.textContent ).toBe( 'Bonjour' );
+	} );
+
+	it( 'drops a slow translation when the visitor switched again meanwhile', async () => {
+		document.body.innerHTML = '<p>Bonjour</p>';
+		let finishEnglish;
+		fakeTranslateBatch.mockImplementation(
+			( texts, from, to ) =>
+				new Promise( ( resolve ) => {
+					if ( to === 'en' ) {
+						finishEnglish = () => resolve( [ 'Hello' ] );
+					} else {
+						resolve( [ 'Ciao' ] );
+					}
+				} )
+		);
+
+		const controller = makeController();
+		const english = controller.setLanguage( 'en' );
+		await new Promise( ( resolve ) => setTimeout( resolve, 0 ) );
+		expect( controller.requestedLanguage ).toBe( 'en' );
+
+		// Back to French while English is still loading.
+		await controller.setLanguage( 'fr' );
+		finishEnglish();
+
+		expect( await english ).toBe( false );
+		expect( document.body.textContent ).toBe( 'Bonjour' );
+		expect( controller.currentLanguage ).toBe( 'fr' );
+	} );
 } );

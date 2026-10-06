@@ -1,4 +1,9 @@
-import { normalizeLocale, detectPreferredLanguage } from '../locale-detect';
+import {
+	normalizeLocale,
+	detectPreferredLanguage,
+	getRememberedLanguage,
+	rememberLanguage,
+} from '../locale-detect';
 
 describe( 'normalizeLocale', () => {
 	it( 'strips region subtags', () => {
@@ -64,5 +69,21 @@ describe( 'detectPreferredLanguage', () => {
 			configurable: true,
 		} );
 		expect( detectPreferredLanguage( [ 'it' ] ) ).toBe( 'it' );
+	} );
+
+	it( 'keeps the source language when it comes first in the browser preferences', () => {
+		mockNavigatorLanguages( [ 'fr-FR', 'fr', 'en-US', 'en' ] );
+
+		expect( detectPreferredLanguage( [ 'fr', 'en', 'it' ] ) ).toBe( 'fr' );
+	} );
+} );
+
+describe( 'remembered language', () => {
+	afterEach( () => window.localStorage.clear() );
+
+	it( 'returns the language the visitor picked last', () => {
+		expect( getRememberedLanguage() ).toBeNull();
+		rememberLanguage( 'fr' );
+		expect( getRememberedLanguage() ).toBe( 'fr' );
 	} );
 } );

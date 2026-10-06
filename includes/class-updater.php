@@ -27,6 +27,10 @@ class Updater {
 	const CACHE_KEY = 'simpletrad_github_release';
 	const CACHE_TTL = 6 * HOUR_IN_SECONDS;
 
+	// A failed check (network error, GitHub rate limit…) is only cached
+	// briefly, so a temporary error never hides an update for hours.
+	const ERROR_CACHE_TTL = 15 * MINUTE_IN_SECONDS;
+
 	/**
 	 * Registers the WordPress update hooks.
 	 */
@@ -34,6 +38,19 @@ class Updater {
 		add_filter( 'site_transient_update_plugins', array( $this, 'inject_update' ) );
 		add_filter( 'plugins_api', array( $this, 'plugin_information' ), 20, 3 );
 		add_action( 'upgrader_process_complete', array( $this, 'purge_cache' ), 10, 0 );
+
+		// "Check again" on Dashboard > Updates must really ask GitHub again.
+		add_action( 'load-update-core.php', array( $this, 'purge_cache_on_force_check' ) );
+	}
+
+	/**
+	 * Clears the cached release when WordPress is asked to force a check.
+	 */
+	public function purge_cache_on_force_check() {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only flag, the page itself checks capabilities.
+		if ( isset( $_GET['force-check'] ) && current_user_can( 'update_plugins' ) ) {
+			$this->purge_cache();
+		}
 	}
 
 	/**
@@ -70,14 +87,14 @@ class Updater {
 		);
 
 		if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
-			set_transient( self::CACHE_KEY, array(), self::CACHE_TTL );
+			set_transient( self::CACHE_KEY, array(), self::ERROR_CACHE_TTL );
 			return null;
 		}
 
 		$body = json_decode( wp_remote_retrieve_body( $response ), true );
 
 		if ( empty( $body['tag_name'] ) ) {
-			set_transient( self::CACHE_KEY, array(), self::CACHE_TTL );
+			set_transient( self::CACHE_KEY, array(), self::ERROR_CACHE_TTL );
 			return null;
 		}
 
@@ -105,14 +122,16 @@ class Updater {
 	}
 
 	/**
-	 * Injects a fake update entry into WordPress's update transient when a
-	 * newer GitHub release is found.
+	 * Injects SimpleTrad into WordPress's update transient: under `response`
+	 * when a newer GitHub release is found, otherwise under `no_update`.
+	 * Being listed in either one is what makes WordPress show the "Enable
+	 * auto-updates" link and lets its background updater handle the plugin.
 	 *
 	 * @param object $transient Update transient.
 	 * @return object
 	 */
 	public function inject_update( $transient ) {
-		if ( empty( $transient->checked ) ) {
+		if ( ! is_object( $transient ) || empty( $transient->checked ) ) {
 			return $transient;
 		}
 
@@ -122,19 +141,26 @@ class Updater {
 			return $transient;
 		}
 
-		if ( ! version_compare( $release['version'], SIMPLETRAD_VERSION, '>' ) ) {
-			return $transient;
+		$item = (object) array(
+			'id'            => 'github.com/' . $this->get_repo_slug(),
+			'slug'          => 'simpletrad',
+			'plugin'        => SIMPLETRAD_BASENAME,
+			'new_version'   => $release['version'],
+			'url'           => $release['changelog_url'],
+			'package'       => $release['download_url'],
+			'icons'         => array(),
+			'banners'       => array(),
+			'banners_rtl'   => array(),
+			'compatibility' => new \stdClass(),
+		);
+
+		if ( version_compare( $release['version'], SIMPLETRAD_VERSION, '>' ) ) {
+			$transient->response[ SIMPLETRAD_BASENAME ] = $item;
+			unset( $transient->no_update[ SIMPLETRAD_BASENAME ] );
+		} else {
+			$transient->no_update[ SIMPLETRAD_BASENAME ] = $item;
+			unset( $transient->response[ SIMPLETRAD_BASENAME ] );
 		}
-
-		$item = new \stdClass();
-
-		$item->slug        = 'simpletrad';
-		$item->plugin      = SIMPLETRAD_BASENAME;
-		$item->new_version = $release['version'];
-		$item->url         = $release['changelog_url'];
-		$item->package     = $release['download_url'];
-
-		$transient->response[ SIMPLETRAD_BASENAME ] = $item;
 
 		return $transient;
 	}

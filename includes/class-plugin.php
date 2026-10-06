@@ -57,12 +57,17 @@ class Plugin {
 		add_action( 'init', array( $floating, 'register' ) );
 
 		// REST routes must be registered on every request (REST calls do not
-		// run inside is_admin()), while the menu page and updater are only
-		// relevant inside wp-admin.
+		// run inside is_admin()), while the menu page is only relevant
+		// inside wp-admin.
 		add_action( 'rest_api_init', array( $rest, 'register_routes' ) );
 
 		if ( is_admin() ) {
 			add_action( 'admin_menu', array( $admin, 'register_menu' ) );
+		}
+
+		// WordPress runs background auto-updates from WP-Cron (and WP-CLI
+		// can update too), outside wp-admin: the updater must be there.
+		if ( is_admin() || wp_doing_cron() || ( defined( 'WP_CLI' ) && WP_CLI ) ) {
 			$updater->init();
 		}
 	}
