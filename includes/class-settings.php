@@ -38,6 +38,9 @@ class Settings {
 			'fallback_models_url' => '',
 			'custom_css'        => '',
 			'protected_terms'   => array(),
+			'floating_enabled'     => false,
+			'floating_position'    => 'bottom-right', // bottom-right | bottom-left.
+			'floating_back_to_top' => true,
 		);
 	}
 
@@ -143,6 +146,20 @@ class Settings {
 					)
 				)
 			);
+		}
+
+		if ( isset( $input['floating_enabled'] ) ) {
+			$sanitized['floating_enabled'] = (bool) $input['floating_enabled'];
+		}
+
+		if ( isset( $input['floating_position'] ) ) {
+			$allowed = array( 'bottom-right', 'bottom-left' );
+			$value   = sanitize_key( $input['floating_position'] );
+			$sanitized['floating_position'] = in_array( $value, $allowed, true ) ? $value : $defaults['floating_position'];
+		}
+
+		if ( isset( $input['floating_back_to_top'] ) ) {
+			$sanitized['floating_back_to_top'] = (bool) $input['floating_back_to_top'];
 		}
 
 		// A language can never be both the source and a target at once.

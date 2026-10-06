@@ -14,6 +14,7 @@ import SourceLanguageSelect from './components/SourceLanguageSelect';
 import TargetLanguagesField from './components/TargetLanguagesField';
 import SwitcherSettings from './components/SwitcherSettings';
 import SwitcherPreview from './components/SwitcherPreview';
+import FloatingSettings from './components/FloatingSettings';
 import CustomCssEditor from './components/CustomCssEditor';
 import ExclusionsField from './components/ExclusionsField';
 import ProtectedTermsField from './components/ProtectedTermsField';
@@ -179,6 +180,28 @@ export default function App() {
 					/>
 
 					<CssClassesReference />
+				</CardBody>
+			</Card>
+
+			<Card>
+				<CardHeader>
+					<h2>{ __( 'Pastille flottante', 'simpletrad' ) }</h2>
+				</CardHeader>
+				<CardBody>
+					<FloatingSettings
+						enabled={ settings.floating_enabled }
+						onEnabledChange={ ( value ) =>
+							updateSetting( 'floating_enabled', value )
+						}
+						position={ settings.floating_position }
+						onPositionChange={ ( value ) =>
+							updateSetting( 'floating_position', value )
+						}
+						backToTop={ settings.floating_back_to_top }
+						onBackToTopChange={ ( value ) =>
+							updateSetting( 'floating_back_to_top', value )
+						}
+					/>
 				</CardBody>
 			</Card>
 

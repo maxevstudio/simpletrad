@@ -45,6 +45,7 @@ class Plugin {
 
 		$assets    = new Assets();
 		$shortcode = new Shortcode();
+		$floating  = new Floating();
 		$admin     = new Admin_Page();
 		$rest      = new Rest_Controller();
 		$updater   = new Updater();
@@ -53,6 +54,7 @@ class Plugin {
 		add_action( 'admin_enqueue_scripts', array( $assets, 'enqueue_admin' ) );
 
 		add_action( 'init', array( $shortcode, 'register' ) );
+		add_action( 'init', array( $floating, 'register' ) );
 
 		// REST routes must be registered on every request (REST calls do not
 		// run inside is_admin()), while the menu page and updater are only

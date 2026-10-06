@@ -71,8 +71,8 @@ export function isExcluded( element, noTranslateClass, excludedSelectors ) {
  * @param {Node}     root              Root node to scan.
  * @param {string}   noTranslateClass  Standard exclusion class.
  * @param {string[]} excludedSelectors Admin-configured excluded CSS selectors.
- * @param {Map}      registry          Node → original-value cache to populate/reuse.
- * @return {Map<string, Array<{node: Node, kind: string}>>} text → targets.
+ * @param {Map}      registry          Node → Map(kind → { original, applied }) cache to populate/reuse.
+ * @return {Map<string, Array<Object>>} trimmed source text → targets.
  */
 export function collectTranslatables(
 	root,
@@ -82,22 +82,46 @@ export function collectTranslatables(
 ) {
 	const groups = new Map();
 
-	const addTarget = ( node, kind, text ) => {
-		const trimmed = text.trim();
-
-		if ( ! trimmed || isPurelyNumericOrPrice( trimmed ) ) {
-			return;
-		}
-
+	const addTarget = ( node, kind, currentText ) => {
 		if ( ! registry.has( node ) ) {
 			registry.set( node, new Map() );
 		}
-		registry.get( node ).set( kind, text );
+
+		const kinds = registry.get( node );
+		const known = kinds.get( kind );
+
+		// While one of our own translations is still displayed, the source
+		// is the pristine original we recorded — never the translated text,
+		// otherwise FR → EN → ES would really translate English as French.
+		// Any other value means the page itself changed this node since.
+		const text =
+			known && currentText === known.applied
+				? known.original
+				: currentText;
+		const trimmed = text.trim();
+
+		if ( ! trimmed || isPurelyNumericOrPrice( trimmed ) ) {
+			if ( ! known ) {
+				kinds.delete( kind );
+			}
+			return;
+		}
+
+		kinds.set( kind, { original: text, applied: currentText } );
 
 		if ( ! groups.has( trimmed ) ) {
 			groups.set( trimmed, [] );
 		}
-		groups.get( trimmed ).push( { node, kind } );
+		groups.get( trimmed ).push( {
+			node,
+			kind,
+			// Engines only ever see trimmed text; the surrounding whitespace
+			// (e.g. the space in `La lettre <em>mensuelle</em>`) is put back
+			// verbatim so inline layouts never collapse.
+			leading: text.match( /^\s*/ )[ 0 ],
+			trailing: text.match( /\s*$/ )[ 0 ],
+			registryEntry: kinds.get( kind ),
+		} );
 	};
 
 	const rootElement =
@@ -167,17 +191,41 @@ export function collectTranslatables(
 }
 
 /**
- * Applies translated strings back onto their DOM targets.
+ * Writes a value onto a text node or attribute target.
  *
- * @param {Array<{node: Node, kind: string}>} targets    Targets sharing the same source text.
- * @param {string}                            translated Translated text to apply.
+ * @param {Node}   node  Target node.
+ * @param {string} kind  `text` or `attr:<name>`.
+ * @param {string} value Value to write.
+ */
+function writeValue( node, kind, value ) {
+	if ( kind === 'text' ) {
+		if ( node.nodeValue !== value ) {
+			node.nodeValue = value;
+		}
+	} else if ( kind.startsWith( 'attr:' ) ) {
+		node.setAttribute( kind.slice( 5 ), value );
+	}
+}
+
+/**
+ * Applies translated strings back onto their DOM targets, keeping each
+ * target's original leading/trailing whitespace.
+ *
+ * @param {Array<Object>} targets    Targets sharing the same source text.
+ * @param {string}        translated Translated text to apply.
  */
 export function applyTranslation( targets, translated ) {
-	targets.forEach( ( { node, kind } ) => {
-		if ( kind === 'text' ) {
-			node.nodeValue = translated;
-		} else if ( kind.startsWith( 'attr:' ) ) {
-			node.setAttribute( kind.slice( 5 ), translated );
+	const core = translated.trim();
+
+	targets.forEach( ( target ) => {
+		const value = `${ target.leading || '' }${ core }${
+			target.trailing || ''
+		}`;
+
+		writeValue( target.node, target.kind, value );
+
+		if ( target.registryEntry ) {
+			target.registryEntry.applied = value;
 		}
 	} );
 }
@@ -186,16 +234,13 @@ export function applyTranslation( targets, translated ) {
  * Restores every previously modified node/attribute back to its original
  * (source-language) value.
  *
- * @param {Map} registry Node → Map(kind → original value).
+ * @param {Map} registry Node → Map(kind → { original, applied }).
  */
 export function restoreOriginals( registry ) {
 	registry.forEach( ( kinds, node ) => {
-		kinds.forEach( ( original, kind ) => {
-			if ( kind === 'text' ) {
-				node.nodeValue = original;
-			} else if ( kind.startsWith( 'attr:' ) ) {
-				node.setAttribute( kind.slice( 5 ), original );
-			}
+		kinds.forEach( ( entry, kind ) => {
+			writeValue( node, kind, entry.original );
+			entry.applied = entry.original;
 		} );
 	} );
 }

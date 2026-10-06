@@ -4,7 +4,7 @@ Tags: translation, multilingual, language switcher, front-end translation
 Requires at least: 6.4
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.0.1
+Stable tag: 1.0.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -67,6 +67,12 @@ Non. La v1.0.0 ne nécessite aucune clé Google Cloud, DeepL, Microsoft
 Translator ni aucun abonnement.
 
 == Changelog ==
+
+= 1.0.2 =
+* Pastille flottante optionnelle (sélecteur de langue + bouton « Retour en haut »).
+* Les espaces autour des textes inline sont conservés après traduction.
+* Changement de langue EN → ES retraduit depuis la source ; retour à la source fiable.
+* Casse inventée par le moteur (MAJUSCULES, Title Case) corrigée.
 
 = 1.0.1 =
 * Éditeur CSS personnalisé pour le switcher, avec aperçu en direct dans l'administration.

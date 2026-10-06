@@ -116,3 +116,124 @@ export function applyCasePattern( originalText, translatedText ) {
 
 	return translatedText;
 }
+
+const WORD_PATTERN = /\p{L}[\p{L}\p{M}'’-]*/gu;
+const SENTENCE_END = /[.!?…:]\s*$/u;
+
+/**
+ * Lists the words of `text` with, for each one, whether it starts a
+ * sentence (first word, or right after `.`, `!`, `?`, `…` or `:`).
+ *
+ * @param {string} text Any text.
+ * @return {Array<{word: string, index: number, initial: boolean}>}
+ */
+function listWords( text ) {
+	return Array.from( text.matchAll( WORD_PATTERN ), ( match, position ) => ( {
+		word: match[ 0 ],
+		index: match.index,
+		initial:
+			position === 0 || SENTENCE_END.test( text.slice( 0, match.index ) ),
+	} ) );
+}
+
+/**
+ * Whether a word is written "Capitalized" (upper first letter, lowercase
+ * rest) — the shape title-casing produces.
+ *
+ * @param {string} word A single word.
+ * @return {boolean}
+ */
+function isCapitalizedWord( word ) {
+	const rest = word.slice( 1 );
+
+	return (
+		word[ 0 ] !== word[ 0 ].toLowerCase() &&
+		rest === rest.toLowerCase() &&
+		/\p{Ll}/u.test( rest )
+	);
+}
+
+/**
+ * Share of non-sentence-initial words that are Capitalized.
+ *
+ * @param {Array} words Output of `listWords()`.
+ * @return {{count: number, ratio: number}}
+ */
+function midSentenceCapitals( words ) {
+	const mid = words.filter( ( entry ) => ! entry.initial );
+	const count = mid.filter( ( entry ) =>
+		isCapitalizedWord( entry.word )
+	).length;
+
+	return { count, ratio: mid.length ? count / mid.length : 0 };
+}
+
+/**
+ * Undoes casing the translation engine invented on its own, so the
+ * translated page keeps the source's typography. On-device engines working
+ * on short fragments (a heading split by `<br>`, an `<em>`…) sometimes
+ * answer in FULL CAPS or In Title Case although the source was neither.
+ *
+ * - Source not fully uppercase but translation fully uppercase → lowercased.
+ * - A translated sentence where most mid-sentence words are Capitalized
+ *   while the source isn't written that way → those words are lowercased.
+ *
+ * Words that appear verbatim in the source (proper nouns kept as-is such
+ * as "Cannes", acronyms such as "UE") are never touched. Runs before
+ * `applyCasePattern()`, which then re-applies the source's own pattern.
+ *
+ * @param {string} originalText   Original (source-language) text.
+ * @param {string} translatedText Text returned by the translation engine.
+ * @return {string} The translated text without engine-invented casing.
+ */
+export function normalizeEngineCasing( originalText, translatedText ) {
+	const sourceWords = new Set(
+		listWords( originalText ).map( ( entry ) => entry.word )
+	);
+	const translatedLetters = getLetters( translatedText );
+
+	if (
+		detectCasePattern( originalText ) !== 'upper' &&
+		translatedLetters.length > 3 &&
+		translatedLetters === translatedLetters.toUpperCase() &&
+		translatedLetters !== translatedLetters.toLowerCase()
+	) {
+		return translatedText.replace( WORD_PATTERN, ( word ) =>
+			sourceWords.has( word ) ? word : word.toLowerCase()
+		);
+	}
+
+	if ( midSentenceCapitals( listWords( originalText ) ).ratio >= 0.5 ) {
+		// The source itself is Title Cased: the engine's casing is faithful.
+		return translatedText;
+	}
+
+	return translatedText
+		.split( /(?<=[.!?…])(\s+)/u )
+		.map( ( sentence ) => {
+			const words = listWords( sentence );
+			const { count, ratio } = midSentenceCapitals( words );
+
+			if ( count < 2 || ratio < 0.6 ) {
+				return sentence;
+			}
+
+			let result = sentence;
+
+			words.forEach( ( { word, index, initial } ) => {
+				if (
+					! initial &&
+					isCapitalizedWord( word ) &&
+					! sourceWords.has( word )
+				) {
+					result =
+						result.slice( 0, index ) +
+						word.toLowerCase() +
+						result.slice( index + word.length );
+				}
+			} );
+
+			return result;
+		} )
+		.join( '' );
+}

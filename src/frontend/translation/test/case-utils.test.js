@@ -1,4 +1,8 @@
-import { detectCasePattern, applyCasePattern } from '../case-utils';
+import {
+	detectCasePattern,
+	applyCasePattern,
+	normalizeEngineCasing,
+} from '../case-utils';
 
 describe( 'detectCasePattern', () => {
 	it.each( [
@@ -65,5 +69,63 @@ describe( 'applyCasePattern', () => {
 
 	it( 'is a no-op when the source has no letters', () => {
 		expect( applyCasePattern( '123', '123' ) ).toBe( '123' );
+	} );
+} );
+
+describe( 'normalizeEngineCasing', () => {
+	it( 'lowercases a fully uppercase translation of a non-uppercase source', () => {
+		expect(
+			normalizeEngineCasing( 'et du Département', 'AND DEPARTMENT' )
+		).toBe( 'and department' );
+	} );
+
+	it( 'keeps an uppercase translation when the source was uppercase', () => {
+		expect( normalizeEngineCasing( 'CONTACT', 'CONTACT US' ) ).toBe(
+			'CONTACT US'
+		);
+	} );
+
+	it( 'keeps acronyms present verbatim in the source', () => {
+		expect(
+			normalizeEngineCasing( 'Les aides de la UE', 'THE UE GRANTS' )
+		).toBe( 'the UE grants' );
+	} );
+
+	it( 'undoes engine-invented Title Case, sentence by sentence', () => {
+		expect(
+			normalizeEngineCasing(
+				'Deux fonctions complémentaires, deux échelles d’action. Retrouvez mes engagements selon le mandat qui vous intéresse.',
+				'Two Complementary Functions, Two Action Scale. Find my commitments according to the mandate that interests you.'
+			)
+		).toBe(
+			'Two complementary functions, two action scale. Find my commitments according to the mandate that interests you.'
+		);
+	} );
+
+	it( 'keeps proper nouns found verbatim in the source', () => {
+		expect(
+			normalizeEngineCasing(
+				'Rencontre avec les habitants de Cannes et Grasse',
+				'Meeting With The Residents Of Cannes And Grasse'
+			)
+		).toBe( 'Meeting with the residents of Cannes and Grasse' );
+	} );
+
+	it( 'trusts the engine when the source itself is Title Cased', () => {
+		expect(
+			normalizeEngineCasing(
+				'Nos Services Premium',
+				'Our Premium Services'
+			)
+		).toBe( 'Our Premium Services' );
+	} );
+
+	it( 'leaves a normal translation untouched', () => {
+		expect(
+			normalizeEngineCasing(
+				'Bienvenue à Nice, chez Maxev',
+				'Welcome to Nice, at Maxev'
+			)
+		).toBe( 'Welcome to Nice, at Maxev' );
 	} );
 } );

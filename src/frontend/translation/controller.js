@@ -5,7 +5,7 @@ import {
 	restoreOriginals,
 } from './dom-walker';
 import { protectTerms, restoreTerms } from './protect-terms';
-import { applyCasePattern } from './case-utils';
+import { applyCasePattern, normalizeEngineCasing } from './case-utils';
 
 const MUTATION_DEBOUNCE_MS = 200;
 
@@ -19,7 +19,8 @@ const MUTATION_DEBOUNCE_MS = 200;
  * the whole lifetime of the page.
  *
  * Translation pipeline for each collected string:
- * original text → protect terms → translate → restore terms → fix case → DOM.
+ * original text → protect terms → translate → restore terms → undo
+ * engine-invented casing → reapply source case → DOM (whitespace kept).
  */
 export class TranslationController {
 	/**
@@ -30,7 +31,7 @@ export class TranslationController {
 		this.engines = new TranslationEngineRegistry(
 			config.fallbackModelsUrl
 		);
-		this.registry = new Map(); // node → Map(kind → original value)
+		this.registry = new Map(); // node → Map(kind → { original, applied })
 		this.currentLanguage = config.sourceLanguage;
 		this.listeners = new Set();
 		this.observer = null;
@@ -190,7 +191,10 @@ export class TranslationController {
 				translated[ index ],
 				protectedEntries[ index ].restoreMap
 			);
-			const finalText = applyCasePattern( text, restored );
+			const finalText = applyCasePattern(
+				text,
+				normalizeEngineCasing( text, restored )
+			);
 
 			applyTranslation( groups.get( text ), finalText );
 		} );

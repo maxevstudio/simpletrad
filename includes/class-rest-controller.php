@@ -143,6 +143,15 @@ class Rest_Controller {
 			'protected_terms'     => array(
 				'type' => 'array',
 			),
+			'floating_enabled'     => array(
+				'type' => 'boolean',
+			),
+			'floating_position'    => array(
+				'type' => 'string',
+			),
+			'floating_back_to_top' => array(
+				'type' => 'boolean',
+			),
 		);
 	}
 }

@@ -80,3 +80,285 @@
 		transform: rotate(360deg);
 	}
 }
+
+/**
+ * Floating language button (optional, see Settings > "Pastille flottante").
+ *
+ * Every color, font and size is a custom property, so a theme can restyle
+ * it from its own CSS (or SimpleTrad's custom CSS field) without touching
+ * any selector, e.g.:
+ *
+ *   .simpletrad-fab { --simpletrad-fab-bg: #7a1f3d; }
+ */
+
+.simpletrad-fab {
+	--simpletrad-fab-size: 52px;
+	--simpletrad-fab-gap: 10px;
+	--simpletrad-fab-offset: 24px;
+	--simpletrad-fab-font: inherit;
+	--simpletrad-fab-bg: #1d2327;
+	--simpletrad-fab-bg-hover: #3c434a;
+	--simpletrad-fab-color: #fff;
+	--simpletrad-fab-top-bg: #fff;
+	--simpletrad-fab-top-bg-hover: #f0f0f1;
+	--simpletrad-fab-top-color: #1d2327;
+	--simpletrad-fab-panel-bg: #fff;
+	--simpletrad-fab-text: #1d2327;
+	--simpletrad-fab-muted: #646970;
+	--simpletrad-fab-accent: #1d2327;
+	--simpletrad-fab-hover-bg: #f6f7f7;
+	--simpletrad-fab-active-bg: #f0f0f1;
+	--simpletrad-fab-border: rgba(0, 0, 0, 0.1);
+	--simpletrad-fab-shadow: rgba(0, 0, 0, 0.35);
+	--simpletrad-fab-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+	position: fixed;
+	bottom: var(--simpletrad-fab-offset);
+	z-index: 990;
+	font-family: var(--simpletrad-fab-font);
+}
+
+.simpletrad-fab.is-bottom-right {
+	right: var(--simpletrad-fab-offset);
+}
+
+.simpletrad-fab.is-bottom-left {
+	left: var(--simpletrad-fab-offset);
+}
+
+/* Shared button base (also neutralizes theme button hover styles). */
+.simpletrad-fab .simpletrad-fab-btn {
+	text-decoration: none;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	height: var(--simpletrad-fab-size);
+	min-width: var(--simpletrad-fab-size);
+	padding: 0;
+	margin: 0;
+	border-radius: 999px;
+	border: 1px solid transparent;
+	cursor: pointer;
+	font: 600 13px/1 var(--simpletrad-fab-font);
+	letter-spacing: 0.04em;
+	box-shadow: 0 14px 30px -14px var(--simpletrad-fab-shadow);
+	transition: transform 0.35s var(--simpletrad-fab-ease), background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease, box-shadow 0.35s ease;
+}
+
+.simpletrad-fab .simpletrad-fab-btn:hover,
+.simpletrad-fab .simpletrad-fab-btn:focus {
+	text-decoration: none;
+}
+
+.simpletrad-fab .simpletrad-fab-btn:focus-visible {
+	outline: 2px solid var(--simpletrad-fab-accent);
+	outline-offset: 3px;
+}
+
+/* Language button: sits at the bottom, slides up when "back to top" shows. */
+.simpletrad-fab-lang {
+	position: relative;
+	z-index: 2;
+	transition: transform 0.5s var(--simpletrad-fab-ease);
+}
+
+.simpletrad-fab.is-scrolled .simpletrad-fab-lang {
+	transform: translateY(calc(-1 * (var(--simpletrad-fab-size) + var(--simpletrad-fab-gap))));
+}
+
+.simpletrad-fab .simpletrad-fab-lang-btn {
+	padding-inline: 16px 18px;
+	background-color: var(--simpletrad-fab-bg);
+	color: var(--simpletrad-fab-color);
+}
+
+.simpletrad-fab .simpletrad-fab-lang-btn:hover,
+.simpletrad-fab .simpletrad-fab-lang-btn:focus,
+.simpletrad-fab .simpletrad-fab-lang-btn[aria-expanded="true"] {
+	background-color: var(--simpletrad-fab-bg-hover);
+	color: var(--simpletrad-fab-color);
+}
+
+.simpletrad-fab .simpletrad-fab-lang-btn:hover {
+	transform: translateY(-2px);
+}
+
+/* Back to top: tucked under the language button until the page scrolls. */
+.simpletrad-fab .simpletrad-fab-top {
+	position: absolute;
+	bottom: 0;
+	z-index: 1;
+	background-color: var(--simpletrad-fab-top-bg);
+	color: var(--simpletrad-fab-top-color);
+	border-color: var(--simpletrad-fab-border);
+	opacity: 0;
+	visibility: hidden;
+	transform: translateY(14px) scale(0.85);
+	transition: transform 0.5s var(--simpletrad-fab-ease), opacity 0.3s ease, visibility 0s linear 0.5s, background-color 0.25s ease, color 0.25s ease, box-shadow 0.35s ease;
+}
+
+.simpletrad-fab.is-bottom-right .simpletrad-fab-top {
+	right: 0;
+}
+
+.simpletrad-fab.is-bottom-left .simpletrad-fab-top {
+	left: 0;
+}
+
+.simpletrad-fab.is-scrolled .simpletrad-fab-top {
+	opacity: 1;
+	visibility: visible;
+	transform: none;
+	transition: transform 0.5s var(--simpletrad-fab-ease) 0.08s, opacity 0.3s ease 0.08s, visibility 0s, background-color 0.25s ease, color 0.25s ease, box-shadow 0.35s ease;
+}
+
+.simpletrad-fab.is-scrolled .simpletrad-fab-top:hover,
+.simpletrad-fab.is-scrolled .simpletrad-fab-top:focus {
+	background-color: var(--simpletrad-fab-top-bg-hover);
+	color: var(--simpletrad-fab-top-color);
+}
+
+.simpletrad-fab .simpletrad-fab-top svg {
+	transition: transform 0.35s var(--simpletrad-fab-ease);
+}
+
+.simpletrad-fab .simpletrad-fab-top:hover svg {
+	transform: translateY(-3px);
+}
+
+/* Language panel: opens upwards, above the button. */
+.simpletrad-fab-panel {
+	position: absolute;
+	bottom: calc(100% + 12px);
+	width: 230px;
+	padding: 14px;
+	border-radius: 20px;
+	background-color: var(--simpletrad-fab-panel-bg);
+	border: 1px solid var(--simpletrad-fab-border);
+	box-shadow: 0 24px 50px -22px var(--simpletrad-fab-shadow);
+	opacity: 0;
+	visibility: hidden;
+	transform: translateY(8px) scale(0.97);
+	transition: opacity 0.25s ease, transform 0.35s var(--simpletrad-fab-ease), visibility 0s linear 0.35s;
+}
+
+.simpletrad-fab.is-bottom-right .simpletrad-fab-panel {
+	right: 0;
+	transform-origin: bottom right;
+}
+
+.simpletrad-fab.is-bottom-left .simpletrad-fab-panel {
+	left: 0;
+	transform-origin: bottom left;
+}
+
+.simpletrad-fab.is-open .simpletrad-fab-panel {
+	opacity: 1;
+	visibility: visible;
+	transform: none;
+	transition: opacity 0.25s ease, transform 0.35s var(--simpletrad-fab-ease), visibility 0s;
+}
+
+.simpletrad-fab .simpletrad-fab-title {
+	margin: 2px 6px 10px;
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--simpletrad-fab-accent);
+}
+
+.simpletrad-fab .simpletrad-fab-note {
+	margin: 10px 6px 2px;
+	font-size: 11px;
+	line-height: 1.4;
+	color: var(--simpletrad-fab-muted);
+}
+
+/* The regular switcher inside the panel. */
+.simpletrad-fab .simpletrad-fab-panel .simpletrad-switcher {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: 2px;
+	margin: 0;
+	padding: 0;
+	background: none;
+	border: 0;
+	border-radius: 0;
+	box-shadow: none;
+}
+
+.simpletrad-fab .simpletrad-fab-panel .simpletrad-language {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	width: 100%;
+	margin: 0;
+	padding: 11px 12px;
+	border: 0;
+	border-radius: 12px;
+	background: transparent;
+	box-shadow: none;
+	opacity: 1;
+	font: 500 14px/1.2 var(--simpletrad-fab-font);
+	color: var(--simpletrad-fab-text);
+	text-align: left;
+	text-transform: none;
+	cursor: pointer;
+	transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.simpletrad-fab .simpletrad-fab-panel .simpletrad-language:hover {
+	background-color: var(--simpletrad-fab-hover-bg);
+}
+
+.simpletrad-fab .simpletrad-fab-panel .simpletrad-language.is-active {
+	background-color: var(--simpletrad-fab-active-bg);
+	color: var(--simpletrad-fab-accent);
+	font-weight: 600;
+}
+
+.simpletrad-fab .simpletrad-fab-panel .simpletrad-language.is-active::after {
+	content: "";
+	flex: none;
+	width: 7px;
+	height: 7px;
+	margin: 0;
+	border: 0;
+	border-radius: 50%;
+	background-color: var(--simpletrad-fab-accent);
+	animation: none;
+}
+
+.simpletrad-fab .simpletrad-fab-panel .simpletrad-language.is-loading::after {
+	width: 0.8em;
+	height: 0.8em;
+	background: none;
+	border: 2px solid currentcolor;
+	border-right-color: transparent;
+	animation: simpletrad-spin 0.6s linear infinite;
+}
+
+@media (max-width: 767px) {
+
+	.simpletrad-fab {
+		--simpletrad-fab-size: 46px;
+		--simpletrad-fab-gap: 8px;
+		--simpletrad-fab-offset: 14px;
+	}
+
+	.simpletrad-fab .simpletrad-fab-lang-btn {
+		padding-inline: 13px 15px;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+	.simpletrad-fab,
+	.simpletrad-fab * {
+		transition-duration: 0.01ms !important;
+	}
+}

@@ -4,4 +4,5 @@
  * possible since they load on every page where `[simpletrad]` is used.
  */
 import './switcher';
+import './floating';
 import './style.css';

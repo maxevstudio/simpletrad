@@ -160,3 +160,52 @@ describe( 'applyTranslation / restoreOriginals', () => {
 		expect( groupsAgain.has( 'Bonjour' ) ).toBe( true );
 	} );
 } );
+
+describe( 'whitespace and language switching', () => {
+	const collect = ( registry ) =>
+		collectTranslatables(
+			document.body,
+			'simpletrad-no-translate',
+			[],
+			registry
+		);
+
+	it( 'keeps the whitespace around inline text (e.g. before an <em>)', () => {
+		document.body.innerHTML = '<h2>La lettre <em>mensuelle</em></h2>';
+		const registry = new Map();
+		const groups = collect( registry );
+
+		applyTranslation( groups.get( 'La lettre' ), 'The letter' );
+		applyTranslation( groups.get( 'mensuelle' ), ' monthly ' );
+
+		expect( document.body.innerHTML ).toBe(
+			'<h2>The letter <em>monthly</em></h2>'
+		);
+	} );
+
+	it( 'translates from the original when switching between two target languages', () => {
+		document.body.innerHTML = '<p>Bonjour</p>';
+		const registry = new Map();
+
+		applyTranslation( collect( registry ).get( 'Bonjour' ), 'Hello' );
+
+		// Switching EN → ES directly: the source must still be "Bonjour".
+		const groups = collect( registry );
+		expect( groups.has( 'Bonjour' ) ).toBe( true );
+		expect( groups.has( 'Hello' ) ).toBe( false );
+
+		applyTranslation( groups.get( 'Bonjour' ), 'Hola' );
+		restoreOriginals( registry );
+		expect( document.body.textContent ).toBe( 'Bonjour' );
+	} );
+
+	it( 'picks up text the page itself changed after a translation', () => {
+		document.body.innerHTML = '<p>Bonjour</p>';
+		const registry = new Map();
+
+		applyTranslation( collect( registry ).get( 'Bonjour' ), 'Hello' );
+		document.querySelector( 'p' ).firstChild.nodeValue = 'Au revoir';
+
+		expect( collect( registry ).has( 'Au revoir' ) ).toBe( true );
+	} );
+} );

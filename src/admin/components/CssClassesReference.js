@@ -24,6 +24,10 @@ const CLASS_NAMES = [
 	'.simpletrad-language-flag',
 	'.simpletrad-language.is-active',
 	'.simpletrad-language.is-loading',
+	'.simpletrad-fab',
+	'.simpletrad-fab-lang-btn',
+	'.simpletrad-fab-top',
+	'.simpletrad-fab-panel',
 ];
 
 /**

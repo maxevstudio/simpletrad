@@ -4,6 +4,27 @@ Toutes les modifications notables de SimpleTrad sont documentées dans ce
 fichier. Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 et le projet respecte le [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.0.2] — Pastille flottante et fidélité de mise en page
+
+### Ajouté
+
+- Pastille flottante (option « Pastille flottante » dans les réglages) :
+  un bouton fixé en bas à droite ou à gauche de l'écran affiche la langue
+  active et ouvre un panneau avec le sélecteur. Option « Retour en haut »
+  qui glisse sous la pastille au défilement. Entièrement personnalisable via
+  les variables CSS `--simpletrad-fab-*`.
+
+### Corrigé
+
+- Les espaces autour d'un texte inline (ex. `La lettre <em>mensuelle</em>`)
+  sont conservés après traduction : la mise en page ne se « colle » plus.
+- Passer d'une langue cible à une autre (EN → ES) retraduit depuis le texte
+  source d'origine, et revenir à la langue source restaure bien l'original
+  (auparavant le texte déjà traduit écrasait l'original).
+- Casse inventée par le moteur annulée : un fragment rendu en MAJUSCULES ou
+  En Title Case alors que la source ne l'était pas reprend la casse de la
+  source (noms propres et sigles présents dans la source préservés).
+
 ## [1.0.1] — Mise à jour corrective et fonctionnelle
 
 ### Ajouté
